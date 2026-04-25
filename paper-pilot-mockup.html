@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Pilot — Fine-Tuning Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Paper & ink — pulled from AFS Paper Airplanes book */
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --pencil: #8a8a8a;
+    /* Book's signature plane palette */
+    --navy: #1d3754;
+    --powder: #cfe2f3;
+    --powder-soft: #e6eff8;
+    /* Book's accent red */
+    --red: #a11d2c;
+    --red-soft: #fbeaec;
+    /* Cobalt link blue (used in book for cross-references) */
+    --link: #1d148b;
+    --line: rgba(29, 55, 84, 0.18);
+    --shadow: 0 2px 0 rgba(29,55,84,0.06), 0 8px 22px -10px rgba(29,55,84,0.18);
+    --shadow-lift: 0 4px 0 rgba(29,55,84,0.10), 0 14px 30px -8px rgba(29,55,84,0.24);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(232, 85, 43, 0.06) 0%, transparent 45%),
+      radial-gradient(circle at 85% 85%, rgba(77, 139, 191, 0.07) 0%, transparent 45%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 28px 22px 80px;
+  }
+
+  /* ------------ HEADER ------------ */
+  .brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    padding-bottom: 18px;
+    border-bottom: 1.5px dashed var(--line);
+  }
+  .brand .logo {
+    font-family: 'Caveat', cursive;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .brand .logo .accent { color: var(--orange); }
+  .brand .tagline {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--pencil);
+    font-weight: 800;
+    margin: 0;
+  }
+
+  /* ------------ SCREEN TRANSITIONS ------------ */
+  .screen { animation: fadeIn 0.28s ease-out; }
+  .screen[hidden] { display: none; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ------------ HOME ------------ */
+  .prompt-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--orange);
+    font-weight: 800;
+    margin: 0;
+  }
+  .prompt h1 {
+    font-family: 'Caveat', cursive;
+    font-size: 48px;
+    line-height: 1.0;
+    margin: 8px 0 10px;
+    font-weight: 700;
+  }
+  .prompt p {
+    color: var(--ink-soft);
+    margin: 0 0 28px;
+    font-size: 16px;
+  }
+
+  .compass {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .compass button {
+    appearance: none;
+    border: 1.5px solid var(--ink);
+    background: white;
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 16px 6px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    line-height: 1.15;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 92px;
+  }
+  .compass button:hover {
+    transform: translate(-1px, -2px);
+    box-shadow: var(--shadow-lift);
+    background: var(--orange-soft);
+  }
+  .compass button:active {
+    transform: translate(0, 0);
+    box-shadow: 0 1px 0 rgba(31,36,51,0.06);
+  }
+  .compass button .arrow {
+    font-size: 24px;
+    line-height: 1;
+    color: var(--orange);
+    font-weight: 800;
+  }
+  .compass .center {
+    border: 1.5px dashed var(--line);
+    background: transparent;
+    box-shadow: none;
+    cursor: default;
+    color: var(--pencil);
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .compass .center svg {
+    width: 38px;
+    height: 38px;
+  }
+
+  .footnote {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--pencil);
+    margin: 20px 0 0;
+  }
+  .footnote a {
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .footnote a:hover { color: var(--orange); }
+
+  /* ------------ FIX SCREEN ------------ */
+  .back-btn {
+    appearance: none;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 18px;
+  }
+  .back-btn:hover { color: var(--orange); }
+
+  .diagnosis { margin-bottom: 18px; }
+  .diagnosis .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--pencil);
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  .diagnosis h2 {
+    font-family: 'Caveat', cursive;
+    font-size: 40px;
+    margin: 0;
+    line-height: 1.05;
+  }
+  .diagnosis .outcome { color: var(--orange); }
+
+  .instruction-card {
+    background: white;
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 22px;
+  }
+  .illustration-stage {
+    background: var(--paper);
+    border-bottom: 1.5px dashed var(--line);
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .illustration-stage .gif-tag,
+  .triptych .gif-tag {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--pencil);
+    font-weight: 800;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    z-index: 2;
+  }
+  .illustration-stage svg { max-width: 88%; max-height: 88%; }
+
+  .instruction-body { padding: 22px 24px 24px; }
+  .instruction-body h3 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 21px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+  }
+  .instruction-body p { margin: 0 0 12px; color: var(--ink-soft); font-size: 15px; }
+  .instruction-body p:last-child { margin-bottom: 0; }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+  }
+  .checklist li {
+    padding: 10px 0 10px 32px;
+    position: relative;
+    color: var(--ink);
+    border-top: 1px dashed var(--line);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .checklist li:before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 13px;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--orange);
+    border-radius: 4px;
+    background: var(--orange-soft);
+  }
+
+  /* ------------ ACTIONS ------------ */
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn {
+    appearance: none;
+    border: 1.5px solid var(--ink);
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    flex: 1;
+    box-shadow: var(--shadow);
+    transition: transform .12s, box-shadow .12s, background .12s;
+    color: var(--ink);
+  }
+  .btn:hover {
+    transform: translate(-1px, -2px);
+    box-shadow: var(--shadow-lift);
+  }
+  .btn:active {
+    transform: translate(0, 0);
+    box-shadow: 0 1px 0 rgba(31,36,51,0.06);
+  }
+  .btn.primary {
+    background: var(--orange);
+    color: white;
+  }
+  .btn.primary:hover { background: #d44a23; }
+
+  /* ------------ TRIPTYCH (3-step diving fix) ------------ */
+  .triptych {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    background: var(--paper);
+    border-bottom: 1.5px dashed var(--line);
+    aspect-ratio: 16 / 8;
+    position: relative;
+  }
+  .triptych > .panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1.5px dashed var(--line);
+    position: relative;
+    padding: 18px 8px 8px;
+  }
+  .triptych > .panel:last-child { border-right: none; }
+  .triptych svg { max-width: 92%; max-height: 92%; }
+  .triptych .step-num {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+    font-family: 'Caveat', cursive;
+    font-size: 24px;
+    color: var(--orange);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .triptych .step-label {
+    position: absolute;
+    bottom: 6px;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+
+  /* ------------ ILLUSTRATION DEFAULTS ------------ */
+  .illus path,
+  .illus line,
+  .illus polygon,
+  .illus rect,
+  .illus circle {
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: white;
+  }
+  .illus .nofill { fill: none; }
+  .illus .dashed { stroke-dasharray: 4 4; }
+  .illus .accent {
+    stroke: var(--orange);
+    fill: var(--orange-soft);
+  }
+  .illus .accent-line { stroke: var(--orange); fill: none; stroke-width: 2; }
+  .illus text {
+    fill: var(--ink-soft);
+    stroke: none;
+    font-family: 'Caveat', cursive;
+    font-weight: 600;
+  }
+
+  /* ------------ ANIMATIONS ------------ */
+  @keyframes flapDown {
+    0%, 12% { transform: rotate(-26deg); }
+    50%, 62% { transform: rotate(0deg); }
+    100% { transform: rotate(-26deg); }
+  }
+  @keyframes flapUp {
+    0%, 12% { transform: rotate(0deg); }
+    50%, 62% { transform: rotate(22deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @keyframes pocketShrink {
+    0%, 12% { transform: scaleY(1); }
+    50%, 62% { transform: scaleY(0.42); }
+    100% { transform: scaleY(1); }
+  }
+  @keyframes pocketGrow {
+    0%, 12% { transform: scaleY(0.55); }
+    50%, 62% { transform: scaleY(1.15); }
+    100% { transform: scaleY(0.55); }
+  }
+  @keyframes tailStraighten {
+    0%, 12% { transform: rotate(var(--bend, -22deg)); }
+    50%, 62% { transform: rotate(0deg); }
+    100% { transform: rotate(var(--bend, -22deg)); }
+  }
+  @keyframes clipSlide {
+    0%, 12% { transform: translateX(-14px); }
+    50%, 100% { transform: translateX(0); }
+  }
+  @keyframes pulseRing {
+    0%, 100% { opacity: 0; transform: scale(0.8); }
+    40% { opacity: 0.7; transform: scale(1.05); }
+    80% { opacity: 0; transform: scale(1.4); }
+  }
+  .pulse { animation: pulseRing 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+  /* small plane SVG in compass center */
+  .center-plane path { stroke: var(--pencil); fill: none; stroke-width: 1.5; }
+
+  /* preflight specific */
+  .preflight-card { padding: 0; }
+
+  @media (max-width: 380px) {
+    .compass button { font-size: 12.5px; padding: 14px 4px 10px; min-height: 84px; }
+    .compass button .arrow { font-size: 21px; }
+    .prompt h1 { font-size: 42px; }
+    .diagnosis h2 { font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+  <main class="app">
+    <header class="brand">
+      <h1 class="logo">Paper <span class="accent">Pilot</span></h1>
+      <p class="tagline">Fine-Tuning · v2</p>
+    </header>
+
+    <!-- ============== HOME ============== -->
+    <section class="screen" id="screen-home">
+      <p class="prompt-eyebrow">After your throw</p>
+      <div class="prompt">
+        <h1>Which way did it go?</h1>
+        <p>Tap the option that best matches what you just saw.</p>
+      </div>
+
+      <div class="compass">
+        <button data-fix="up-left"><span class="arrow">↖</span><span>Up &amp; Left</span></button>
+        <button data-fix="up-fast"><span class="arrow">↑</span><span>Up Too Fast</span></button>
+        <button data-fix="up-right"><span class="arrow">↗</span><span>Up &amp; Right</span></button>
+
+        <button data-fix="level-left"><span class="arrow">←</span><span>Level Left</span></button>
+        <div class="center">
+          <svg class="center-plane" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 20 6 L 6 32 L 20 28 L 34 32 Z"/>
+            <line x1="20" y1="6" x2="20" y2="28"/>
+          </svg>
+        </div>
+        <button data-fix="level-right"><span class="arrow">→</span><span>Level Right</span></button>
+
+        <button data-fix="down-left"><span class="arrow">↙</span><span>Down &amp; Left</span></button>
+        <button data-fix="down-straight"><span class="arrow">↓</span><span>Down (Straight)</span></button>
+        <button data-fix="down-right"><span class="arrow">↘</span><span>Down &amp; Right</span></button>
+      </div>
+
+      <p class="footnote">Plane won't even leave the hand? <a id="link-preflight">Run a preflight check</a></p>
+    </section>
+
+    <!-- ============== FIX ============== -->
+    <section class="screen" id="screen-fix" hidden>
+      <button class="back-btn" id="btn-home">← back to throw map</button>
+      <div class="diagnosis">
+        <p class="eyebrow">You saw</p>
+        <h2><span class="outcome" id="fix-outcome"></span></h2>
+      </div>
+      <div class="instruction-card" id="fix-card"></div>
+      <div class="actions">
+        <button class="btn primary" id="btn-throw-again">Throw it again</button>
+        <button class="btn" id="btn-didnt-work">Didn't work →</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ============ ILLUSTRATION SVGs ============
+       Each function returns an inline SVG that animates to show
+       the adjustment a real GIF will eventually demonstrate.
+    ================================================ */
+    const SVGS = {
+      // UP TOO FAST: side view, rear flaps animating from up to flat
+      rearFlapsDown: () => `
+        <svg class="illus" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- main body (side silhouette) -->
+          <path d="M 30 92 L 175 76 L 200 80 L 200 90 L 30 95 Z"/>
+          <!-- vertical fin/keel -->
+          <path d="M 110 78 L 132 36 L 150 76 Z"/>
+          <!-- rear flap, animated -->
+          <g style="transform-origin: 200px 86px; animation: flapDown 2.4s ease-in-out infinite;">
+            <path class="accent" d="M 200 86 L 226 74 L 226 82 L 200 92 Z"/>
+          </g>
+          <!-- motion arrow -->
+          <path class="accent-line" d="M 218 60 Q 232 76 218 92"/>
+          <path class="accent-line" d="M 213 88 L 218 92 L 222 87"/>
+          <text x="120" y="124" font-size="15" text-anchor="middle">flatten the rear flaps</text>
+        </svg>
+      `,
+
+      // UP-LEFT / UP-RIGHT primary: front view, animate the named pocket smaller
+      pocketSmaller: (side) => {
+        const isLeft = side === 'left';
+        const pocketAnim = 'animation: pocketShrink 2.4s ease-in-out infinite;';
+        return `
+        <svg class="illus" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- delta wings (front view) -->
+          <path d="M 120 28 L 30 96 L 210 96 Z"/>
+          <!-- center keel -->
+          <line x1="120" y1="28" x2="120" y2="96" class="dashed"/>
+          <!-- LEFT pocket -->
+          <g style="transform-origin: 65px 96px; ${isLeft ? pocketAnim : ''}">
+            <path class="${isLeft ? 'accent' : ''}" d="M 45 96 Q 65 116 85 96 Z"/>
+          </g>
+          <!-- RIGHT pocket -->
+          <g style="transform-origin: 175px 96px; ${!isLeft ? pocketAnim : ''}">
+            <path class="${!isLeft ? 'accent' : ''}" d="M 155 96 Q 175 116 195 96 Z"/>
+          </g>
+          <!-- pulse ring on the active side -->
+          <circle class="pulse" cx="${isLeft ? 65 : 175}" cy="106" r="22" fill="none" stroke="var(--orange)" stroke-width="2"/>
+          <text x="120" y="130" font-size="15" text-anchor="middle">pinch the ${side} pocket smaller</text>
+        </svg>
+        `;
+      },
+
+      // UP-LEFT-2 / UP-RIGHT-2: open the OPPOSITE pocket wider
+      pocketBigger: (side) => {
+        const isLeft = side === 'left';
+        const pocketAnim = 'animation: pocketGrow 2.4s ease-in-out infinite;';
+        return `
+        <svg class="illus" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 120 28 L 30 96 L 210 96 Z"/>
+          <line x1="120" y1="28" x2="120" y2="96" class="dashed"/>
+          <g style="transform-origin: 65px 96px; ${isLeft ? pocketAnim : ''}">
+            <path class="${isLeft ? 'accent' : ''}" d="M 45 96 Q 65 116 85 96 Z"/>
+          </g>
+          <g style="transform-origin: 175px 96px; ${!isLeft ? pocketAnim : ''}">
+            <path class="${!isLeft ? 'accent' : ''}" d="M 155 96 Q 175 116 195 96 Z"/>
+          </g>
+          <circle class="pulse" cx="${isLeft ? 65 : 175}" cy="108" r="24" fill="none" stroke="var(--orange)" stroke-width="2"/>
+          <text x="120" y="130" font-size="15" text-anchor="middle">open the ${side} pocket wider</text>
+        </svg>
+        `;
+      },
+
+      // LEVEL LEFT / RIGHT: top-down view, tail bends back to straight
+      tailStraighten: (side) => {
+        const bend = side === 'left' ? '-22deg' : '22deg';
+        return `
+        <svg class="illus" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- top-down body -->
+          <path d="M 120 18 L 38 100 L 120 92 L 202 100 Z"/>
+          <line x1="120" y1="18" x2="120" y2="92" class="dashed"/>
+          <!-- tail (animated) -->
+          <g style="--bend: ${bend}; transform-origin: 120px 92px; animation: tailStraighten 2.6s ease-in-out infinite;">
+            <path class="accent" d="M 102 92 L 120 92 L 138 92 L 120 116 Z"/>
+          </g>
+          <text x="120" y="132" font-size="15" text-anchor="middle">straighten the tail's trailing edge</text>
+        </svg>
+        `;
+      },
+
+      // DIVING: 3-panel triptych showing the 3 fixes
+      divingTriptych: () => `
+        <div class="triptych">
+          <span class="gif-tag">3 GIFs · diving fixes</span>
+          <div class="panel">
+            <span class="step-num">1</span>
+            <svg class="illus" viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 55 14 L 14 60 L 96 60 Z"/>
+              <line x1="55" y1="14" x2="55" y2="60" class="dashed"/>
+              <g style="transform-origin: 30px 60px; animation: pocketGrow 2.4s ease-in-out infinite;">
+                <path class="accent" d="M 18 60 Q 30 74 42 60 Z"/>
+              </g>
+              <g style="transform-origin: 80px 60px; animation: pocketGrow 2.4s ease-in-out infinite;">
+                <path class="accent" d="M 68 60 Q 80 74 92 60 Z"/>
+              </g>
+            </svg>
+            <span class="step-label">open pockets</span>
+          </div>
+          <div class="panel">
+            <span class="step-num">2</span>
+            <svg class="illus" viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 14 50 L 80 40 L 90 44 L 90 50 L 14 54 Z"/>
+              <path d="M 50 42 L 62 22 L 74 42 Z"/>
+              <g style="transform-origin: 90px 47px; animation: flapUp 2.4s ease-in-out infinite;">
+                <path class="accent" d="M 90 47 L 102 38 L 102 44 L 90 50 Z"/>
+              </g>
+            </svg>
+            <span class="step-label">flaps up</span>
+          </div>
+          <div class="panel">
+            <span class="step-num">3</span>
+            <svg class="illus" viewBox="0 0 110 80" xmlns="http://www.w3.org/2000/svg">
+              <!-- side view body -->
+              <path d="M 14 50 L 80 40 L 90 44 L 90 50 L 14 54 Z"/>
+              <!-- keel -->
+              <path d="M 50 42 L 62 22 L 74 42 Z"/>
+              <!-- paperclip animated -->
+              <g style="animation: clipSlide 2.4s ease-in-out infinite;">
+                <path class="accent-line" d="M 56 38 L 56 30 Q 56 26 60 26 L 66 26 Q 70 26 70 30 L 70 38"/>
+                <path class="accent-line" d="M 58 38 L 58 32 Q 58 30 60 30 L 64 30"/>
+              </g>
+            </svg>
+            <span class="step-label">clip back to keel</span>
+          </div>
+        </div>
+      `,
+
+      // PREFLIGHT: clipboard checklist
+      preflight: () => `
+        <svg class="illus" viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg">
+          <rect x="80" y="22" width="100" height="100" rx="6"/>
+          <rect x="110" y="14" width="40" height="14" rx="3" fill="var(--paper)"/>
+          <line x1="96" y1="46" x2="164" y2="46" class="dashed"/>
+          <line x1="96" y1="64" x2="164" y2="64" class="dashed"/>
+          <line x1="96" y1="82" x2="164" y2="82" class="dashed"/>
+          <line x1="96" y1="100" x2="164" y2="100" class="dashed"/>
+          <path class="accent-line" d="M 90 44 L 93 48 L 99 41"/>
+          <path class="accent-line" d="M 90 62 L 93 66 L 99 59"/>
+          <path class="accent-line" d="M 90 80 L 93 84 L 99 77"/>
+        </svg>
+      `
+    };
+
+    /* ============ FIX DEFINITIONS ============ */
+    const FIXES = {
+      'up-fast': {
+        outcome: 'up too fast',
+        title: 'Bring it down a notch',
+        intro: "It's climbing too steeply, then stalling. The rear flaps are catching too much air.",
+        illustration: SVGS.rearFlapsDown(),
+        gifLabel: 'GIF · rear flaps',
+        checklist: [
+          'Lower the rear flaps a small amount.',
+          'Make sure the paper clip is fully tucked into the keel.'
+        ],
+        nextFix: null
+      },
+      'up-left': {
+        outcome: 'up & left',
+        title: 'Tighten the left pocket',
+        intro: 'The left wing is generating too much lift. Shrink the left pocket to even things out.',
+        illustration: SVGS.pocketSmaller('left'),
+        gifLabel: 'GIF · pinch left pocket',
+        checklist: ['Decrease the size of the pocket under the LEFT wing.'],
+        nextFix: 'up-left-2'
+      },
+      'up-left-2': {
+        outcome: 'still drifting left',
+        title: 'Now widen the right pocket',
+        intro: "If shrinking the left didn't quite do it, balance from the other side.",
+        illustration: SVGS.pocketBigger('right'),
+        gifLabel: 'GIF · open right pocket',
+        checklist: ['Increase the size of the pocket under the RIGHT wing.'],
+        nextFix: null
+      },
+      'up-right': {
+        outcome: 'up & right',
+        title: 'Tighten the right pocket',
+        intro: 'Mirror of the left fix: shrink the right pocket to balance lift.',
+        illustration: SVGS.pocketSmaller('right'),
+        gifLabel: 'GIF · pinch right pocket',
+        checklist: ['Decrease the size of the pocket under the RIGHT wing.'],
+        nextFix: 'up-right-2'
+      },
+      'up-right-2': {
+        outcome: 'still drifting right',
+        title: 'Now widen the left pocket',
+        intro: "If shrinking the right didn't quite do it, balance from the other side.",
+        illustration: SVGS.pocketBigger('left'),
+        gifLabel: 'GIF · open left pocket',
+        checklist: ['Increase the size of the pocket under the LEFT wing.'],
+        nextFix: null
+      },
+      'level-left': {
+        outcome: 'level, but pulling left',
+        title: 'Straighten the tail',
+        intro: "Flying level but veering almost always means the tail's trailing edge is bent. Yours is probably bent slightly LEFT.",
+        illustration: SVGS.tailStraighten('left'),
+        gifLabel: 'GIF · straighten tail',
+        checklist: [
+          'Find the trailing edge of the tail.',
+          'Gently flatten any leftward bend.'
+        ],
+        nextFix: 'up-left'
+      },
+      'level-right': {
+        outcome: 'level, but pulling right',
+        title: 'Straighten the tail',
+        intro: "Flying level but veering almost always means the tail's trailing edge is bent. Yours is probably bent slightly RIGHT.",
+        illustration: SVGS.tailStraighten('right'),
+        gifLabel: 'GIF · straighten tail',
+        checklist: [
+          'Find the trailing edge of the tail.',
+          'Gently flatten any rightward bend.'
+        ],
+        nextFix: 'up-right'
+      },
+      'down-left': {
+        outcome: 'diving — pulls left',
+        title: 'Get it climbing first',
+        intro: "We can't fix direction on a diving plane. Once it goes up, the side-drift is easy to tune. Three quick checks:",
+        illustration: SVGS.divingTriptych(),
+        triptychMode: true,
+        checklist: [
+          'Wing pockets are fully opened.',
+          'Rear flaps on the wings are bent UP.',
+          'Paper clip is not too far forward — it should sit just inside the keel.'
+        ],
+        nextFix: 'preflight'
+      },
+      'down-straight': {
+        outcome: 'straight nosedive',
+        title: 'Get it climbing first',
+        intro: 'Pure dive, no drift. Three things to check:',
+        illustration: SVGS.divingTriptych(),
+        triptychMode: true,
+        checklist: [
+          'Wing pockets are fully opened.',
+          'Rear flaps on the wings are bent UP.',
+          'Paper clip is not too far forward — it should sit just inside the keel.'
+        ],
+        nextFix: 'preflight'
+      },
+      'down-right': {
+        outcome: 'diving — pulls right',
+        title: 'Get it climbing first',
+        intro: "We can't fix direction on a diving plane. Once it goes up, the side-drift is easy to tune. Three quick checks:",
+        illustration: SVGS.divingTriptych(),
+        triptychMode: true,
+        checklist: [
+          'Wing pockets are fully opened.',
+          'Rear flaps on the wings are bent UP.',
+          'Paper clip is not too far forward — it should sit just inside the keel.'
+        ],
+        nextFix: 'preflight'
+      },
+      'preflight': {
+        outcome: 'still no joy',
+        title: 'Time for a full preflight check',
+        intro: "Something deeper might be off. Head back to the start and re-check each fold — there's usually one pocket or crease that didn't quite take.",
+        illustration: SVGS.preflight(),
+        gifLabel: 'GIF · full preflight',
+        checklist: [
+          'Re-fold from step 1, checking each crease is sharp.',
+          'Verify both wing pockets match.',
+          'Confirm paper clip placement.'
+        ],
+        nextFix: null
+      }
+    };
+
+    /* ============ RENDER ============ */
+    function showFix(key) {
+      const fix = FIXES[key];
+      if (!fix) return;
+
+      document.getElementById('fix-outcome').textContent = fix.outcome;
+
+      const stage = fix.triptychMode
+        ? fix.illustration
+        : `<div class="illustration-stage"><span class="gif-tag">${fix.gifLabel}</span>${fix.illustration}</div>`;
+
+      const checklistHtml = `<ul class="checklist">${fix.checklist.map(c => `<li>${c}</li>`).join('')}</ul>`;
+
+      document.getElementById('fix-card').innerHTML = `
+        ${stage}
+        <div class="instruction-body">
+          <h3>${fix.title}</h3>
+          <p>${fix.intro}</p>
+          ${checklistHtml}
+        </div>
+      `;
+
+      const didntWork = document.getElementById('btn-didnt-work');
+      if (fix.nextFix) {
+        didntWork.style.display = '';
+        didntWork.dataset.next = fix.nextFix;
+        didntWork.textContent = "Didn't work →";
+      } else {
+        didntWork.style.display = 'none';
+      }
+
+      document.getElementById('screen-home').setAttribute('hidden', '');
+      document.getElementById('screen-fix').removeAttribute('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showHome() {
+      document.getElementById('screen-fix').setAttribute('hidden', '');
+      document.getElementById('screen-home').removeAttribute('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ============ EVENTS ============ */
+    document.querySelectorAll('.compass button[data-fix]').forEach(btn => {
+      btn.addEventListener('click', () => showFix(btn.dataset.fix));
+    });
+    document.getElementById('btn-home').addEventListener('click', showHome);
+    document.getElementById('btn-throw-again').addEventListener('click', showHome);
+    document.getElementById('btn-didnt-work').addEventListener('click', e => {
+      const next = e.currentTarget.dataset.next;
+      if (next) showFix(next);
+    });
+    document.getElementById('link-preflight').addEventListener('click', () => showFix('preflight'));
+  </script>
+</body>
+</html>
